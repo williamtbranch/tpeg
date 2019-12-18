@@ -1,6 +1,6 @@
 # Match language of a character 'a'
 Grammar a{
-    A <- 'a'
+    A:  'a'
 }
 Test match a {
     a
@@ -14,17 +14,19 @@ Test match a {
 Test search a {
     a
     >Expect {
-        (1 1 1)
+        a
     }
     aa
     >Expect {
-        (1 1 1) (1 2 1)
+        a
+        a
     }
     abb
     bba
     cd
     >Expect {
-        (1 1 1) (2 3 1)
+        a
+        a
     }
     xxz
     zxx
