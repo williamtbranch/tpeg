@@ -2,13 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 
 project(tpeg VERSION 0.01)
 
+include_directories(include)
 set(SOURCES
+    src/runner.cpp
     src/tpeg.cpp
 )
 
-add_executable(tpeg ${SOURCES})
-
-target_include_directories(tpeg
-    PRIVATE
-        ${PROJECT_SOURCE_DIR}/include
-)
+add_executable(runner ${SOURCES})

@@ -1,5 +1,8 @@
 #include <iostream>
+#include <vector>
+#include <string>
 
-int main(){
+
+void printHello(){
     std::cout << "Hello from tpeg" << std::endl;
 }
