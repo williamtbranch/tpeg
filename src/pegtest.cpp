@@ -1,38 +1,17 @@
+#include <pegtest.hpp>
 #include <iostream>
-#include <vector>
-#include <string>
 
 
-class testCase;
-class pegExpression;
-class grammarDef;
-class grammarTest;
-class testBatch;
+testBatch::testBatch(std::string inputTests){
+    //Convert input grammar string into test tree.
+    std::cout << "Beginning parse." << std::endl;
+    int index {0};
+    grammarTest newTest(inputTests, index);
 
-class testBatch {
-    public:
-        std::vector<grammarTest> batch;
-};
+}
 
-class grammarTest{
-    public:
-        grammarDef grammar;
-        std::vector<testCase> tests; 
-};
+grammarTest::grammarTest(const std::string &parseString, int index){
+    isValid = false;
+    
+}
 
-class grammarDef{
-    public:
-        std::string grammarName;
-        std::vector<pegExpression> expressions;
-};
-
-enum class testType {
-    MATCH,
-    SEARCH
-};
-
-class testCase{
-    testType type;
-    std::string input;
-    std::string expected;
-};

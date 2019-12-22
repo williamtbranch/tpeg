@@ -6,6 +6,7 @@ include_directories(include)
 set(SOURCES
     src/runner.cpp
     src/tpeg.cpp
+    src/pegtest.cpp
 )
 
 add_executable(runner ${SOURCES})
