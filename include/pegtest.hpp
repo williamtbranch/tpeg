@@ -2,6 +2,14 @@
 #include <vector>
 #include <string>
 
+class gobble {
+    public:
+        std::string content;
+        int consumed;
+        bool status;
+        gobble (std::string parentString, int index);
+};
+
 
 class pegExpression {
     std::string expression;

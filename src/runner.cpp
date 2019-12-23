@@ -15,7 +15,6 @@ int main (int argc, char *argv[]){
     
     std::string testString;
     testString.assign ((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-    std::cout << testString << std::endl;
 
     //Create test batch object
     testBatch *tests = new testBatch(testString);
