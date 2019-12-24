@@ -1,5 +1,5 @@
    
-(a
+ (a
     (
         ((A) ('a'))
     )
@@ -15,3 +15,65 @@
     )
 )
     
+(double_a
+    (
+        ((D)("aa"))
+    )
+    (
+        (match)
+        (a)
+        (false)
+    )
+    (
+        (match)
+        (aaa)
+        (false)
+    )
+    (
+        (match)
+        (aba)
+        (false)
+    )
+
+    (
+        (match)
+        (aa)
+        (true)
+    )
+    (
+        (match)
+        (b)
+        (false)
+    )
+)
+(double_a2
+    (
+        ((D)('a' 'a'))
+    )
+    (
+        (match)
+        (a)
+        (false)
+    )
+    (
+        (match)
+        (aaa)
+        (false)
+    )
+    (
+        (match)
+        (aba)
+        (false)
+    )
+
+    (
+        (match)
+        (aa)
+        (true)
+    )
+    (
+        (match)
+        (b)
+        (false)
+    )
+)

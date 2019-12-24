@@ -10,7 +10,6 @@ int main (int argc, char *argv[]){
     }
 
     //Get file into test string
-    std::cout << "Beginning read from file " << argv[1] << std::endl;
     std::ifstream ifs(argv[1]);
     
     std::string testString;
@@ -18,6 +17,10 @@ int main (int argc, char *argv[]){
 
     //Create test batch object
     testBatch *tests = new testBatch(testString);
+
+    if (tests->valid == false) {
+        std::cout << tests->batch_error.errorMSG << std::endl;
+    }
 
     delete tests;
 
