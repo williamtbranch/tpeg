@@ -17,7 +17,9 @@
     
 (double_a 
     (
-        ((D)("aa"))
+        ((D)("aa" \ BIRD))
+        ((BIRD)("aa" DOVE))
+        ((DOVE)("aa" DOVE))
     )
     (
         (match)
@@ -25,7 +27,7 @@
         (false)
     )
     (
-        (match)
+        (search)
         (aaa)
         (false)
     )
