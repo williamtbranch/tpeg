@@ -7,6 +7,7 @@ enum class ErrorType{
     UNKNOWN,
     BAD_INPUT,
     EMPTY_LIST,
+    UNBALANCED, //unbalanced parens
     OUT_OF_BOUNDS
 };
 
@@ -27,13 +28,17 @@ class gobble {
 
 
 class pegExpression {
-    std::string expression;
+    public:
+        std::string name;
+        std::string rule;
+        pegExpression (const std::string& parseString);
 };
 
 class grammarDef{
     public:
-        std::string grammarName;
         std::vector<pegExpression> expressions;
+        grammarDef(const std::string& parseString);
+        grammarDef();
 };
 
 enum class testType {
@@ -42,14 +47,16 @@ enum class testType {
 };
 
 class testCase{
-    testType type;
-    std::string input;
-    std::string expected;
+    public:
+        testType type;
+        std::string input;
+        std::string expected;
 };
 
 class grammarTest{
     public:
         grammarDef grammar;
+        error grammarTestError;
         bool valid;
         std::vector<testCase> tests; 
         std::string testName;

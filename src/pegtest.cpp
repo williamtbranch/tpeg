@@ -7,14 +7,15 @@ gobble::gobble (const std::string& parentString, int index){
     status = false;
     consumed = 0;
     gobble_error.type = ErrorType::NON_ERROR;
-    gobble_error.errorMSG = "Unknown Error in gobble.";
+    gobble_error.errorMSG = "Expecting no error in gobble.";
 
     //First see if index is even inside string
-    if (parentString.size() - 1 < index){
+    if (parentString.size()  < index){
         gobble_error.type = ErrorType::OUT_OF_BOUNDS;
         gobble_error.errorMSG = "Attempt to read beyond string limits.";
         return;
     }
+
     
     char currentChar = parentString[index];
     //find next list
@@ -22,6 +23,13 @@ gobble::gobble (const std::string& parentString, int index){
     index += inc;
     consumed += inc;
     if (parentString[index] != '(' ){
+        //Check if at EOF - this is not a parse error
+        if (parentString[index] == 0){
+            return;
+        }
+        //This is a parse error
+        std::cout << "integer of character is: " << (int)parentString[index] << std::endl;
+        std::cout << "character is: " << parentString[index] << std::endl;
         gobble_error.errorMSG = "Error: Illegal characters found before list.";
         gobble_error.type = ErrorType::BAD_INPUT;
         std::cout << "Found bad input at: " << index << std::endl;
@@ -61,6 +69,10 @@ gobble::gobble (const std::string& parentString, int index){
         content += parentString[index];
         index++;
     }
+    if (depth > 0){
+        gobble_error.type = ErrorType::UNBALANCED;
+        gobble_error.errorMSG = "Reached end of input before finding ')'";
+    }
 }
 
 testBatch::testBatch(const std::string& inputTests){
@@ -68,26 +80,39 @@ testBatch::testBatch(const std::string& inputTests){
     int index {0};
     int testNumber {0};
     valid = true; 
+    std::string errorMsg;
 
     while (inputTests.size() > index){
         gobble test(inputTests, index);
         if (test.status == true){
             grammarTest newTest(test.content);
+            if (newTest.grammarTestError.type != ErrorType::NON_ERROR){
+                batch_error.type = newTest.grammarTestError.type;
+                batch_error.errorMSG = newTest.grammarTestError.errorMSG;
+                batch_error.errorMSG += "\nError found in grammar test #";
+                batch_error.errorMSG += std::to_string(batch.size() + 1);
+                valid = false;
+                return;
+            }
             index += test.consumed;
             batch.push_back(newTest);
             testNumber += 1;
         }
         else {
+            if (test.gobble_error.type != ErrorType::NON_ERROR){
+                valid = false;
+                batch_error.errorMSG = test.gobble_error.errorMSG;
+                batch_error.type = test.gobble_error.type;
+                batch_error.errorMSG += "\nError found in grammar test #";
+                batch_error.errorMSG += std::to_string(batch.size() + 1);
+                return;
+            }
+            
             if (testNumber == 0){
                 valid = false;
-                if (test.gobble_error.type != ErrorType::NON_ERROR){
-                    batch_error.errorMSG = test.gobble_error.errorMSG;
-                    batch_error.type = test.gobble_error.type;
-                }
-                else{
-                    batch_error.errorMSG = "Error: No test cases found.";
-                    batch_error.type = ErrorType::EMPTY_LIST;
-                }
+                batch_error.errorMSG = "Error: No test cases found.";
+                batch_error.type = ErrorType::EMPTY_LIST;
+                return;
             } 
             break;
         }
@@ -102,15 +127,62 @@ testBatch::testBatch(const std::string& inputTests){
 grammarTest::grammarTest(const std::string& parseString){
     int testNumber {0};
     valid = true;
-
     content = parseString;
-    
+    int index {0};
+    //Get to first non-space
+    index += ConsumeSpaces(content, index);
+    //Grab Name from first field
+    while(content.size() > index){
+        //ascii chars from 0 to z including several symbols
+        if (content[index] > 47 && content[index] < 123){
+            testName.push_back(content[index]);
+            index++;
+        }
+        else break;
+    }
+
+    //If no name return with error flagged
+    if (testName.size() == 0){
+        valid = false;
+        grammarTestError.type = ErrorType::BAD_INPUT;
+        grammarTestError.errorMSG = "Grammar Test missing Grammar Test Name.";
+        return;
+    }
+
+    //get grammardef
+    gobble test(parseString, index);
+    grammarDef newGrammar(test.content);
+    grammar = newGrammar;
+
+}
+
+
+grammarDef::grammarDef(const std::string& parseString){
+    int index {0};
+    std::cout << "grammarDef string is:" << parseString << std::endl;
+    while (parseString.size() > index){
+        gobble expressionString(parseString, index);
+        pegExpression expression(expressionString.content);
+        index += expressionString.consumed;
+        expressions.push_back(expression);
+    }
+}
+
+grammarDef::grammarDef(){
+}
+
+pegExpression::pegExpression(const std::string& parseString){
+    int index {0};
+    gobble ruleName(parseString, 0);
+    name = ruleName.content;
+    index += ruleName.consumed;
+    rule = gobble(parseString, index).content;
 }
 
 //returns number of space characters consumed if any
 int ConsumeSpaces (const std::string& parseString, int index){
     int consumed {0};
-    while(parseString.size() >= index){
+    while(parseString.size() > index){
         //std::cout << "At " << index << " character is: " << parseString[index] << std::endl;
         switch (parseString[index])
         {

@@ -11,6 +11,9 @@ int main (int argc, char *argv[]){
 
     //Get file into test string
     std::ifstream ifs(argv[1]);
+    if (ifs.fail()){
+        std::cout << "Could not open file " << argv[1] << std::endl;
+    }
     
     std::string testString;
     testString.assign ((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
