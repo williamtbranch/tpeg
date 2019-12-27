@@ -117,11 +117,6 @@ testBatch::testBatch(const std::string& inputTests){
             break;
         }
     }
-    for (int i = 0; batch.size() > i; i++){
-        std::cout << "Test " << i+1 << ":" << std::endl;
-        std::cout << batch[i].content << std::endl;
-    }
-
 }
 
 grammarTest::grammarTest(const std::string& parseString){
@@ -153,13 +148,44 @@ grammarTest::grammarTest(const std::string& parseString){
     gobble test(parseString, index);
     grammarDef newGrammar(test.content);
     grammar = newGrammar;
+    index += test.consumed;
 
+    //get test cases
+    while(parseString.size() > index){
+        test = gobble(parseString, index);
+        tests.push_back(testCase(test.content));
+        index += test.consumed;
+    }
+
+
+}
+
+testCase::testCase (const std::string& parseString){
+    int index {0};
+    //get test type
+    gobble chunk(parseString, index);
+    index += chunk.consumed;
+    if (chunk.content == "match"){
+        type = testType::MATCH;
+    }
+    else {
+        type = testType::SEARCH;
+    }
+
+    //get expression
+    chunk = gobble(parseString, index);
+    index += chunk.consumed;
+    input = chunk.content;
+
+    //get expected value
+
+    chunk = gobble(parseString, index);
+    expected = chunk.content;
 }
 
 
 grammarDef::grammarDef(const std::string& parseString){
     int index {0};
-    std::cout << "grammarDef string is:" << parseString << std::endl;
     while (parseString.size() > index){
         gobble expressionString(parseString, index);
         pegExpression expression(expressionString.content);

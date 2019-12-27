@@ -51,6 +51,7 @@ class testCase{
         testType type;
         std::string input;
         std::string expected;
+        testCase(const std::string& parseString);
 };
 
 class grammarTest{
