@@ -20,7 +20,6 @@ int main (int argc, char *argv[]){
 
     //Create test batch object
     testBatch *tests = new testBatch(testString);
-    testBatch*& myTests = tests;
 
     if (tests->valid == false) {
         std::cout << tests->batch_error.errorMSG << std::endl;
