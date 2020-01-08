@@ -3,41 +3,80 @@
 #include <string>
 #include <iostream>
 
-Argument::Argument (char input) {
+Argument::Argument (mchar input) {
   c = input;
 }
 
-Argument::Argument (unsigned int input) {
+Argument::Argument (maddress input) {
   address = input;
 }
 
-
-Instruction::Instruction(Opcode input_opcode, Argument input_argument)
-  :opcode(input_opcode), argument(input_argument) {
-
+Argument::Argument () {
+  address = 0;
 }
 
-Instruction::Instruction(Opcode input_opcode, char input_argument)
-  :opcode(input_opcode), argument(input_argument){
-
+Instruction::Instruction(){
+  opcode = Opcode::UNSET;
 }
 
-Instruction::Instruction(Opcode input_opcode, unsigned int input_argument)
-  :opcode(input_opcode), argument(input_argument){
-
+Instruction::Instruction(Opcode code_type):opcode {code_type}
+{
+  switch (code_type)
+  {
+  case Opcode::HALT:
+  case Opcode::OUT_OF_BOUNDS:
+  case Opcode::UNSET:
+    break;
+  
+  default:
+    std::cerr << "ERROR: Wrong instruction initializer used for opcode "
+      << GetOpcodeString(code_type) << "." << std::endl;
+    abort();
+    break;
+  }
 }
 
-//Some Instructions don't need arguments
-Instruction::Instruction(Opcode input_opcode)
-  :opcode(input_opcode), argument(char(0)){
+Instruction::Instruction(
+  Opcode code_type,
+  mchar char_input,
+  maddress int_input)
+    :opcode {code_type}, argument1 {char_input}, argument2 {int_input} 
+{
+  switch (code_type)
+  {
+  case Opcode::MATCH:
+    break;
+  
+  default:
+    std::cerr << "ERROR: Wrong instruction initializer used for opcode "
+      << GetOpcodeString(code_type) << "." << std::endl;
+    abort();
+    break;
+  }
+}
 
+Instruction::Instruction(
+  Opcode code_type,
+  maddress int_input)
+    :opcode {code_type}, argument1 {int_input} 
+{
+  switch (code_type)
+  {
+  case Opcode::JUMP:
+    break;
+  
+  default:
+    std::cerr << "ERROR: Wrong instruction initializer used for opcode "
+      << GetOpcodeString(code_type) << "." << std::endl;
+    abort();
+    break;
+  }
 }
 
 ParseMachine::ParseMachine(){
   SetParseString("");
   std::vector<Instruction> temp_code;
   SetParseCode(temp_code);
-  
 }
 
 ParseMachine::ParseMachine(std::vector<Instruction> input_code,
@@ -63,11 +102,11 @@ void ParseMachine::SetParseString(std::string input_string){
 std::vector<Instruction> ParseMachine::GetParseCode(){
   std::vector<Instruction> return_code;
   for (int i=0; i < code_.size(); i++){
-      return_code.push_back(code_[i]);
+    return_code.push_back(code_[i]);
   }
   while(return_code.size() > 0
-      && return_code[return_code.size()-1].opcode == Opcode::OUT_OF_BOUNDS){
-      return_code.pop_back();
+    && return_code[return_code.size()-1].opcode == Opcode::OUT_OF_BOUNDS){
+    return_code.pop_back();
   }
   return return_code;
 }
@@ -75,7 +114,7 @@ std::vector<Instruction> ParseMachine::GetParseCode(){
 void ParseMachine::SetParseCode(std::vector<Instruction> input_code){
   code_.clear();
   for (int i=0; i < input_code.size(); i++){
-      code_.push_back(input_code[i]);
+    code_.push_back(input_code[i]);
   }
 
   //Make sure to prevent the program counter moving out of bounds
@@ -137,12 +176,13 @@ void ParseMachine::Run(){
         return;
         break;
       case Opcode::MATCH:
-        if (code_[pc].argument.c != parse_string_[c]){
-          match_ = false;
-          return;
-        }
         pc++;
-        c++;
+        if (code_[pc].argument1.c != parse_string_[c]){
+          pc==code_[pc].argument2.address;
+        }
+        else{
+          c++;
+        }
         break;
       case Opcode::OUT_OF_BOUNDS:
         match_ = validity;
@@ -151,5 +191,30 @@ void ParseMachine::Run(){
       default:
         break;
     }
+  }
+}
+
+std::string GetOpcodeString (Opcode opcode){
+  switch (opcode)
+  {
+  case Opcode::MATCH:
+    return "MATCH";
+    break;
+  case Opcode::JUMP:
+    return "JUMP";
+    break;
+  case Opcode::HALT:
+    return "HALT";
+    break;
+  case Opcode::OUT_OF_BOUNDS:
+    return "OUT_OF_BOUNDS";
+    break;
+  case Opcode::UNSET:
+    return "UNSET";
+    break;
+  
+  default:
+    return "UNREGISTERED OPCODE";
+    break;
   }
 }

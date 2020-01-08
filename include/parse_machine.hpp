@@ -3,13 +3,13 @@
 #include <vector>
 
 enum class Opcode {
-    MATCH,
-    JUMP,
-    HALT,
+  MATCH,
+  JUMP,
+  HALT,
 
-    //Internal instruction appended to end of instruction array
-    OUT_OF_BOUNDS, //Semantically same as HALT
-    OTHER
+  //Internal instruction appended to end of instruction array
+  OUT_OF_BOUNDS, //Semantically same as HALT
+  UNSET
 };
 
 enum class Runtype{
@@ -19,21 +19,27 @@ enum class Runtype{
     SEARCH
 };
 
+//allow for easier update of instruction argument sizes later if needed
+typedef char mchar;
+typedef unsigned long maddress;
+
 typedef union Argument {
-    char c;
-    unsigned int address;
-    Argument(char input);
-    Argument(unsigned int input);
+  mchar c;
+  maddress address;
+  Argument(mchar input);
+  Argument(maddress input);
+  Argument();
 } Argument;
 
 typedef struct Instruction {
-    public:
-        const Opcode opcode;
-        const Argument argument;
-        Instruction(Opcode input_opcode, Argument input_argument);
-        Instruction(Opcode input_opcode, char input_argument);
-        Instruction(Opcode input_opcode, unsigned int input_argument);
-        Instruction(Opcode input_opcode);
+  public:
+    Opcode opcode;
+    Argument argument1;
+    Argument argument2;
+    Instruction();
+    Instruction(Opcode code_type);
+    Instruction(Opcode code_type, mchar char_input, maddress int_input);
+    Instruction(Opcode code_type, maddress int_input);
 } Instruction;
 
 
@@ -52,7 +58,9 @@ class ParseMachine {
         void SetParseString(std::string input_string);
         std::vector<Instruction> GetParseCode();
         void SetParseCode(std::vector<Instruction> input_code);
-        void Set(std::vector<Instruction> input_code, 
-            std::string input_string);
+        void Set(std::vector<Instruction> input_code,
+          std::string input_string); 
         bool Match();
 };
+
+std::string GetOpcodeString (Opcode opcode);
