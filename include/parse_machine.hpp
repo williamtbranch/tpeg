@@ -6,6 +6,7 @@ enum class Opcode {
   MATCH,
   JUMP,
   HALT,
+  SET_VALID,
 
   //Internal instruction appended to end of instruction array
   OUT_OF_BOUNDS, //Semantically same as HALT
@@ -22,12 +23,16 @@ enum class Runtype{
 //allow for easier update of instruction argument sizes later if needed
 typedef char mchar;
 typedef unsigned long maddress;
+typedef bool mflag;
 
 typedef union Argument {
   mchar c;
   maddress address;
-  Argument(mchar input);
-  Argument(maddress input);
+  mflag flag;
+  Argument(bool input);
+  Argument(unsigned long input);
+  Argument(char input);
+  Argument(int input);
   Argument();
 } Argument;
 
@@ -38,8 +43,8 @@ typedef struct Instruction {
     Argument argument2;
     Instruction();
     Instruction(Opcode code_type);
-    Instruction(Opcode code_type, mchar char_input, maddress int_input);
-    Instruction(Opcode code_type, maddress int_input);
+    Instruction(Opcode code_type, Argument input_1, Argument input_2);
+    Instruction(Opcode code_type, Argument input_1);
 } Instruction;
 
 
@@ -64,3 +69,7 @@ class ParseMachine {
 };
 
 std::string GetOpcodeString (Opcode opcode);
+
+//Helper functions for instruction generation
+std::vector<Instruction> Parse (std::string input_string);
+Instruction ParseInstruction (std::string input_string);

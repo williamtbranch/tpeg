@@ -2,17 +2,21 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
 
-Argument::Argument (mchar input) {
-  c = input;
+Argument::Argument (bool input):flag {input} {
 }
 
-Argument::Argument (maddress input) {
-  address = input;
+Argument::Argument (char input):c {input} {
 }
 
-Argument::Argument () {
-  address = 0;
+Argument::Argument (unsigned long input):address {input} {
+}
+
+Argument::Argument (int input):address {(unsigned long int)input} {
+}
+
+Argument::Argument ():address {0} {
 }
 
 Instruction::Instruction(){
@@ -38,9 +42,9 @@ Instruction::Instruction(Opcode code_type):opcode {code_type}
 
 Instruction::Instruction(
   Opcode code_type,
-  mchar char_input,
-  maddress int_input)
-    :opcode {code_type}, argument1 {char_input}, argument2 {int_input} 
+  Argument input_1,
+  Argument input_2)
+    :opcode {code_type}, argument1 {input_1}, argument2 {input_2} 
 {
   switch (code_type)
   {
@@ -57,12 +61,13 @@ Instruction::Instruction(
 
 Instruction::Instruction(
   Opcode code_type,
-  maddress int_input)
-    :opcode {code_type}, argument1 {int_input} 
+  Argument input_1)
+    :opcode {code_type}, argument1 {input_1} 
 {
   switch (code_type)
   {
   case Opcode::JUMP:
+  case Opcode::SET_VALID:
     break;
   
   default:
@@ -165,7 +170,7 @@ void ParseMachine::Run(){
   int pc {0}; //program counter
   long c {0}; //character index
 
-  bool validity {true}; //Final result of run
+  bool validity {false}; //Final result of run
 
   bool exit {false};
   while (!exit){
@@ -176,19 +181,26 @@ void ParseMachine::Run(){
         return;
         break;
       case Opcode::MATCH:
-        pc++;
         if (code_[pc].argument1.c != parse_string_[c]){
-          pc==code_[pc].argument2.address;
+          pc=code_[pc].argument2.address;
         }
         else{
           c++;
+          pc++;
         }
         break;
       case Opcode::OUT_OF_BOUNDS:
         match_ = validity;
         return;
         break;
+      case Opcode::SET_VALID:
+        validity = code_[pc].argument1.flag;
+        pc++;
+        break;
       default:
+        std::cerr << "ERROR: Undefined opcode broke through to machine" <<
+          std::endl;
+        abort();
         break;
     }
   }
@@ -211,6 +223,9 @@ std::string GetOpcodeString (Opcode opcode){
     break;
   case Opcode::UNSET:
     return "UNSET";
+    break;
+  case Opcode::SET_VALID:
+    return "SET_VALID";
     break;
   
   default:

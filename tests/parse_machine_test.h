@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-TEST_CASE( "Test ParseMachine behavior", "[ParseMachine]" ) {
+TEST_CASE( "ParseMachine", "[ParseMachine]" ) {
   //Parse machine input string should always have terminating zero
   //Initializes thus
-  SECTION ( "Initialize empty parse machine" ) {
+  SECTION ( "Initializeemptyparsemachine" ) {
     ParseMachine test_m;
     CHECK (test_m.GetParseString() == "");
     CHECK (test_m.GetParseCode().size() == 0);
@@ -17,7 +17,7 @@ TEST_CASE( "Test ParseMachine behavior", "[ParseMachine]" ) {
   //OUT_OF_BOUNDS instruction should be internal only
   //if user supplies one or more at end of code, they are removed
   //and replaced with single HALT Since they are semantically identical
-  SECTION ( "Ending 'out of bounds' instruction removed"){
+  SECTION ( "Endingoutofbounds"){
     std::vector<Instruction> code;
     code.push_back(Instruction(Opcode::MATCH, 'a', 1));
     code.push_back(Instruction(Opcode::MATCH, 'a', 1));
@@ -32,7 +32,7 @@ TEST_CASE( "Test ParseMachine behavior", "[ParseMachine]" ) {
     CHECK (test_m.GetParseCode()[5].opcode == Opcode::HALT);
   }
 
-  SECTION ( "Manually setting parse string and code") {
+  SECTION ( "Manuallysetting") {
     ParseMachine test_m;
     test_m.SetParseString("abba");
 
@@ -59,7 +59,7 @@ TEST_CASE( "Test ParseMachine behavior", "[ParseMachine]" ) {
     CHECK (test_m.GetParseCode()[3].argument1.address == 1);
   }
 
-  SECTION ( "Resetting parse string and code should clear old values"){
+  SECTION ( "Resettingparsestring"){
     //setting code up
     std::vector<Instruction> code;
     code.push_back(Instruction(Opcode::MATCH, 'a', 2));
@@ -96,12 +96,16 @@ TEST_CASE( "Test ParseMachine behavior", "[ParseMachine]" ) {
     CHECK (test_m.GetParseCode()[3].argument1.c == 'x');
   }
 
-  SECTION ( "Simple Matching" ){
+  SECTION ( "SimpleMatching" ){
     //single character
     std::vector<Instruction> code;
     code.push_back(Instruction(Opcode::MATCH, 'a', 2));
+    code.push_back(Instruction(Opcode::SET_VALID, true));
+    code.push_back(Instruction(Opcode::HALT));
     ParseMachine test_m(code, "a");
     CHECK(test_m.Match() == true);
+    test_m.Set(code, "b");
+    CHECK(test_m.Match() == false);
 
 //     test_m.Set(code, "b");
 //     CHECK(test_m.Match() == false);
