@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 #include <iostream>
 #include <tpeg.hpp>
+#include <bc_parse.hpp>
 #include <parse_machine.hpp>
 #include <string>
 #include <vector>
@@ -32,7 +33,7 @@ TEST_CASE( "ParseMachine", "[ParseMachine]" ) {
     CHECK (test_m.GetParseCode()[5].opcode == Opcode::HALT);
   }
 
-  SECTION ( "Manuallysetting") {
+  SECTION ( "Manually setting") {
     ParseMachine test_m;
     test_m.SetParseString("abba");
 
@@ -96,22 +97,23 @@ TEST_CASE( "ParseMachine", "[ParseMachine]" ) {
     CHECK (test_m.GetParseCode()[3].argument1.c == 'x');
   }
 
-  SECTION ( "SimpleMatching" ){
+  SECTION ( "Simple Matching" ){
     //single character
-    std::vector<Instruction> code;
-    code.push_back(Instruction(Opcode::MATCH, 'a', 2));
-    code.push_back(Instruction(Opcode::SET_VALID, true));
-    code.push_back(Instruction(Opcode::HALT));
+    std::vector<Instruction> code {Parse(R"(
+      match a 2
+      set_valid true
+      halt
+    )")};
     ParseMachine test_m(code, "a");
     CHECK(test_m.Match() == true);
     test_m.Set(code, "b");
     CHECK(test_m.Match() == false);
 
-//     test_m.Set(code, "b");
-//     CHECK(test_m.Match() == false);
-
-//     //multi-character
-//     code.clear();
+    //multi-character
+    code.clear();
+    code = Parse(R"(
+      
+    )");
 //     code.push_back(Instruction(Opcode::MATCH, 'a'));
 //     code.push_back(Instruction(Opcode::MATCH, 'b'));
 //     code.push_back(Instruction(Opcode::MATCH, 'c'));

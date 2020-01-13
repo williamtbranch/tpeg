@@ -69,7 +69,3 @@ class ParseMachine {
 };
 
 std::string GetOpcodeString (Opcode opcode);
-
-//Helper functions for instruction generation
-std::vector<Instruction> Parse (std::string input_string);
-Instruction ParseInstruction (std::string input_string);
