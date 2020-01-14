@@ -17,7 +17,7 @@ TEST_CASE( "Single instruction correctness") {
     Instruction badi2 {ParseInstruction("match")};
     CHECK (badi2.opcode == Opcode::UNSET);
   }
-  SECTION ( "SET_VALID parse"){
+  SECTION ( "SET_VALID parse" ){
     Instruction instruction {ParseInstruction("set_valid true")};
     CHECK (instruction.opcode == Opcode::SET_VALID);
     CHECK (instruction.argument1.flag == true);
@@ -28,7 +28,7 @@ TEST_CASE( "Single instruction correctness") {
     Instruction badi1 {ParseInstruction("set_valid")};
     CHECK (badi1.opcode == Opcode::UNSET);
   }
-  SECTION ( "HALT parse"){
+  SECTION ( "HALT parse" ){
     Instruction instruction {ParseInstruction("halt")};
     CHECK (instruction.opcode == Opcode::HALT);
   }

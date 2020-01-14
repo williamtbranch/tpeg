@@ -97,47 +97,4 @@ TEST_CASE( "ParseMachine", "[ParseMachine]" ) {
     CHECK (test_m.GetParseCode()[3].argument1.c == 'x');
   }
 
-  SECTION ( "Simple Matching" ){
-    //single character
-    std::vector<Instruction> code {Parse(R"(
-      match a 2
-      set_valid true
-      halt
-    )")};
-    ParseMachine test_m(code, "a");
-    CHECK(test_m.Match() == true);
-    test_m.Set(code, "b");
-    CHECK(test_m.Match() == false);
-
-    //multi-character
-    code.clear();
-    code = Parse(R"(
-      
-    )");
-//     code.push_back(Instruction(Opcode::MATCH, 'a'));
-//     code.push_back(Instruction(Opcode::MATCH, 'b'));
-//     code.push_back(Instruction(Opcode::MATCH, 'c'));
-//     test_m.Set(code, "abc");
-//     CHECK(test_m.Match() == true);
-//     test_m.Set(code, "cba");
-//     CHECK(test_m.Match() == false);
-
-//     //handles running out of string to process
-//     test_m.Set(code, "a");
-//     CHECK(test_m.Match() == false);
-//     test_m.Set(code, "b");
-//     CHECK(test_m.Match() == false);
-
-//     //does not incorrectly match when last characters match
-//     test_m.Set(code, "xxc");
-//     CHECK(test_m.Match() == false);
-  }
-
-//   SECTION ( "Repeat one or more times '+' matching"){
-//     std::vector<Instruction> code;
-//     code.push_back(Instruction(Opcode::MATCH, 'a'));
-//     ParseMachine test_m(code, "abbbbbbbba");
-
-//   }
-
 }

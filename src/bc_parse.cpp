@@ -51,18 +51,24 @@ Instruction ParseInstruction (std::string input_string){
       return Instruction(opcode, arg1_string[0], std::stoi(arg2_string));
       break;
     case Opcode::SET_VALID:
-      {
+    {//protect scope of valid
       if(arg1_string == ""){
         return Instruction(Opcode::UNSET);
       }
       bool valid {false};
       if (arg1_string == "true") valid = true;
       return Instruction(opcode, valid);
-      }
+    }
       break;
     case Opcode::HALT:
     case Opcode::UNSET:
       return Instruction(opcode);
+      break;
+    case Opcode::JUMP:
+      if(arg1_string == ""){
+        return Instruction(Opcode::UNSET);
+      }
+      return Instruction(opcode, std::stoi(arg1_string));
       break;
     
     default:

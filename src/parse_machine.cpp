@@ -197,8 +197,11 @@ void ParseMachine::Run(){
         validity = code_[pc].argument1.flag;
         pc++;
         break;
+      case Opcode::JUMP:
+        pc = code_[pc].argument1.address;
+        break;
       default:
-        std::cerr << "ERROR: Undefined opcode broke through to machine" <<
+        std::cerr << "ERROR: Undefined opcode: instruction escaped dispatch" <<
           std::endl;
         abort();
         break;
