@@ -80,8 +80,8 @@ Instruction::Instruction(
 
 ParseMachine::ParseMachine(){
   SetParseString("");
-  std::vector<Instruction> temp_code;
-  SetParseCode(temp_code);
+  std::vector<Instruction> empty_code;
+  SetParseCode(empty_code);
 }
 
 ParseMachine::ParseMachine(std::vector<Instruction> input_code,
