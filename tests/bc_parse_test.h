@@ -48,3 +48,24 @@ TEST_CASE( "Parsing multi-line correctness" ){
     CHECK(code[2].argument1.c == 'c');
   }
 }
+
+TEST_CASE( "bcParseNumber test"){
+  SECTION ("Basic Not match 'aa'"){
+    std::vector<TreeChar> tree;
+    std::string input {"aa"};
+    input.push_back(0);
+    Shuttle bop {input, tree};
+    Shuttle bop_out = bcParseNumber(bop);
+    CHECK(bop_out.match == false);
+    CHECK(bop_out.input_index == 0);
+  }
+  SECTION ("Basic Match digit 1"){
+    std::vector<TreeChar> tree;
+    std::string input {"1"};
+    input.push_back(0);
+    Shuttle bop {input, tree};
+    Shuttle bop_out = bcParseNumber(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 1);
+  }
+}

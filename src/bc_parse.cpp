@@ -92,3 +92,24 @@ Opcode GetOpcodeFromName(std::string opcode_name){
   if (opcode_name == "out_of_bounds") return Opcode::OUT_OF_BOUNDS;
   return Opcode::UNSET; 
 }
+
+
+Shuttle::Shuttle(const std::string &input, std::vector<TreeChar> &input_tree)
+  : input_string{input},
+    tree{input_tree},
+    tree_index{0},
+    input_index {0},
+    match {true}
+{
+}
+
+Shuttle bcParseNumber (const Shuttle &shuttle){
+  Shuttle bop = shuttle;
+  if (bop.input_string[bop.input_index] > '0' 
+      && bop.input_string[bop.input_index] <= '9'){
+        bop.input_index++;
+        return bop;
+      }
+  bop.match = false;
+  return bop;
+}
