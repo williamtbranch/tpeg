@@ -35,14 +35,24 @@ typedef struct TreeChar{
   TreeDatum datum;
 } TreeChar;
 
+enum class Rule{
+  UNSET_RULE,
+  NUMBER,
+  SPACE,
+  ID
+};
+
+
 typedef struct Shuttle{
   std::vector<TreeChar> &tree;
   unsigned long int tree_index;
   const std::string &input_string;
   unsigned long int input_index;
   bool match;
+  Rule rule;
   Shuttle(const std::string &input, std::vector<TreeChar> &tree );
   Shuttle(const std::string &input);
+  Shuttle(const Shuttle &input_shuttle, Rule new_rule);
 } Shuttle;
 
 //byte code parsing functions
@@ -53,5 +63,9 @@ Instruction ParseInstruction (std::string input_string);
 Opcode GetOpcodeFromName(std::string opcode_name);
 
 //General Grammar Parser
-Shuttle ParseGrammar (const Shuttle &shuttle, Shuttle (*ParseRule)(Shuttle shuttle));
+Shuttle ParseGrammar (const Shuttle &shuttle,
+  Shuttle (*ParseRule)(const Shuttle &shuttle));
 Shuttle bcParseNumber (const Shuttle &shuttle); 
+Shuttle bcParseSpace (const Shuttle &shuttle); 
+Shuttle bcParseId (const Shuttle &shuttle); 
+Shuttle bcParseLabelPtr (const Shuttle &shuttle); 

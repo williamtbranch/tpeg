@@ -49,23 +49,199 @@ TEST_CASE( "Parsing multi-line correctness" ){
   }
 }
 
-TEST_CASE( "bcParseNumber test"){
+//space       <- [\s\t]+
+//number      <- [1-9][0-9]+
+//id          <- [a-zA-Z_][a-zA-z0-9_.]*
+//label_ptr   <- ':'id 
+
+
+//space  <- [\s\t]+
+TEST_CASE( "bcParseSpace test"){
   SECTION ("Basic Not match 'aa'"){
     std::vector<TreeChar> tree;
+
     std::string input {"aa"};
+
     input.push_back(0);
     Shuttle bop {input, tree};
+    Shuttle bop_out = bcParseSpace(bop);
+
+    CHECK(bop_out.match == false);
+    CHECK(bop_out.input_index == 0);
+  }
+  SECTION ("Basic Match space ' '"){
+    std::string input {" "};
+
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseSpace(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 1);
+  }
+  SECTION ("Basic Match tab"){
+    std::string input {"\t"};
+
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseSpace(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 1);
+  }
+  SECTION ("Basic Match multiple type of spaces 'tab,space'"){
+    std::string input {"\t "};
+
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseSpace(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 2);
+  }
+  SECTION ("Basic Match multiple space with extra stuff"){
+    std::string input {"\t  \t stuff"};
+
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseSpace(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 5);
+  }
+}
+
+//number <- [1-9][0-9]+
+TEST_CASE( "bcParseNumber test"){
+  SECTION ("Basic Not match 'aa'"){
+    std::string input {"aa"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
     Shuttle bop_out = bcParseNumber(bop);
     CHECK(bop_out.match == false);
     CHECK(bop_out.input_index == 0);
   }
   SECTION ("Basic Match digit 1"){
-    std::vector<TreeChar> tree;
     std::string input {"1"};
+
+    std::vector<TreeChar> tree;
     input.push_back(0);
     Shuttle bop {input, tree};
+
     Shuttle bop_out = bcParseNumber(bop);
     CHECK(bop_out.match == true);
     CHECK(bop_out.input_index == 1);
+  }
+  SECTION ("Not match digits starting with 0"){
+    std::string input {"09"};
+
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseNumber(bop);
+    CHECK(bop_out.match == false);
+    CHECK(bop_out.input_index == 0);
+  }
+  SECTION ("Match multiple digits"){
+    std::string input {"208734 stuff"};
+
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseNumber(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 6);
+  }
+}
+
+//id     <- [a-zA-Z_][a-zA-z0-9_.]*
+TEST_CASE( "bcParseId test"){
+  SECTION ("Basic Not match '55'"){
+    std::string input {"55"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseId(bop);
+    CHECK(bop_out.match == false);
+    CHECK(bop_out.input_index == 0);
+  }
+  SECTION ("Basic match 'a stuff'"){
+    std::string input {"a stuff"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseId(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 1);
+  }
+  SECTION ("Match 'Z_b8.5a+ stuff'"){
+    std::string input {"Z_b8.5a+ stuff"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseId(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 7);
+  }
+  SECTION ("Match '_aZ_b8.095a+ stuff'"){
+    std::string input {"_aZ_b8.095a+ stuff"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseId(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 11);
+  }
+}
+
+//General parser testing starts here because at least a few parsing primitives
+//must already be functional as this function depends on them.
+//Additionally a large set of parsing rules depends on ParseGrammar so it
+//does not make sense to test this any later.
+TEST_CASE( "ParseGrammar test"){
+
+  SECTION ("Basic Not match '55'"){
+    std::string input {"55"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out {ParseGrammar(bop, bcParseNumber)};
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 2);
+    CHECK(bop_out.rule == Rule::NUMBER);
+  }
+}
+
+//label_ptr   <- ':'id 
+TEST_CASE( "bcParseLabelPtr test"){
+  SECTION ("Basic Not match '55'"){
+    std::string input {"55"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseLabelPtr(bop);
+    //CHECK(bop_out.match == false);
+    //CHECK(bop_out.input_index == 0);
   }
 }

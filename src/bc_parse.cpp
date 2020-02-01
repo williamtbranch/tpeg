@@ -99,17 +99,102 @@ Shuttle::Shuttle(const std::string &input, std::vector<TreeChar> &input_tree)
     tree{input_tree},
     tree_index{0},
     input_index {0},
+    rule {Rule::UNSET_RULE},
+    match {true}
+{
+}
+Shuttle::Shuttle(const Shuttle &input_shuttle, Rule new_rule)
+  : input_string{input_shuttle.input_string},
+    tree{input_shuttle.tree},
+    tree_index{input_shuttle.tree_index},
+    input_index {input_shuttle.input_index},
+    rule {new_rule},
     match {true}
 {
 }
 
+Shuttle ParseGrammar (const Shuttle &shuttle,
+  Shuttle (*ParseRule)(const Shuttle &shuttle))
+  {
+    Shuttle bop {ParseRule(shuttle)};
+    return bop;
+  }
+
+//number <- [1-9][0-9]+
 Shuttle bcParseNumber (const Shuttle &shuttle){
-  Shuttle bop = shuttle;
-  if (bop.input_string[bop.input_index] > '0' 
-      && bop.input_string[bop.input_index] <= '9'){
+  #define ip bop.input_string[bop.input_index]
+  Shuttle bop(shuttle, Rule::NUMBER);
+  if (ip > '0' && ip <= '9'){
         bop.input_index++;
-        return bop;
       }
-  bop.match = false;
+  else {
+    bop.match = false;
+    return bop;
+  }
+  while (ip >= '0' && ip <= '9'){
+    bop.input_index++;
+      }
   return bop;
+  #undef ip
 }
+
+//space  <- [\s\t]+
+Shuttle bcParseSpace (const Shuttle &shuttle){
+  #define ip bop.input_string[bop.input_index]
+  Shuttle bop(shuttle, Rule::SPACE);
+  switch (ip)
+  {
+  case ' ':
+  case '\t':
+    bop.input_index++;
+    break;
+  default:
+    bop.match = false;
+    return bop;
+    break;
+  }
+  while (true){
+    switch (ip)
+    {
+    case ' ':
+    case '\t':
+      bop.input_index++;
+      break;
+    default:
+      return bop;
+      break;
+    }
+  }
+  #undef ip
+}
+
+//id     <- [a-zA-Z_][a-zA-z0-9_.]*
+Shuttle bcParseId (const Shuttle &shuttle){
+  #define ip bop.input_string[bop.input_index]
+  Shuttle bop(shuttle, Rule::ID);
+  if ( ip >= 'A' && ip <= 'Z' || ip >= 'a' & ip <= 'z' || ip == '_'){
+    bop.input_index++;
+  }
+  else {
+    bop.match = false;
+    return bop;
+  }
+  while (true){
+    if ( ip >= 'A' && ip <= 'Z' || ip >= 'a' & ip <= 'z' || ip == '_'
+      || ip == '.' || ip >= '0' && ip <= '9'){
+      bop.input_index++;
+    }
+    else {return bop;}
+
+  }
+  #undef ip
+}
+
+//label_ptr   <- ':'id 
+Shuttle bcParseLabelPtr (const Shuttle &shuttle){
+  #define ip bop.input_string[bop.input_index]
+  Shuttle bop {shuttle};
+  //if (ip == ':')
+  return bop;
+  #undef ip
+} 
