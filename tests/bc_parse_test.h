@@ -175,6 +175,7 @@ TEST_CASE( "bcParseId test"){
     Shuttle bop_out = bcParseId(bop);
     CHECK(bop_out.match == false);
     CHECK(bop_out.input_index == 0);
+    CHECK(bop_out.rule == Rule::ID);
   }
   SECTION ("Basic match 'a stuff'"){
     std::string input {"a stuff"};
@@ -229,10 +230,30 @@ TEST_CASE( "ParseGrammar test"){
     CHECK(bop_out.input_index == 2);
     CHECK(bop_out.rule == Rule::NUMBER);
   }
+
+  SECTION ("Basic tree match"){
+    std::string input {"5655"};
+    
+    std::vector<TreeChar> tree;
+    tree.resize(input.size() * tree_node_size * 2);
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out {ParseGrammar(bop, bcParseNumber)};
+    CHECK(bop_out.tree[0].type == TreeCharType::TREE);
+    // CHECK(bop_out.tree[1].type == TreeCharType::ADDRESS);
+    // CHECK(bop_out.tree[2].type == TreeCharType::LENGTH);
+    // CHECK(bop_out.tree[3].type == TreeCharType::TREE);
+    // CHECK(bop_out.tree[0].datum.character == '(');
+    // CHECK(bop_out.tree[3].datum.character == ')');
+    // CHECK(bop_out.tree[1].datum.address == 0);
+    // CHECK(bop_out.tree[2].datum.length == 4);
+    // CHECK(bop_out.tree_index == 4);
+  }
 }
 
-//label_ptr   <- ':'id 
-TEST_CASE( "bcParseLabelPtr test"){
+//label   <- ':'id 
+TEST_CASE( "bcParseLabel test"){
   SECTION ("Basic Not match '55'"){
     std::string input {"55"};
     
@@ -240,7 +261,8 @@ TEST_CASE( "bcParseLabelPtr test"){
     input.push_back(0);
     Shuttle bop {input, tree};
 
-    Shuttle bop_out = bcParseLabelPtr(bop);
+    Shuttle bop_out = bcParseLabel(bop);
+    CHECK(bop_out.rule == Rule::LABEL);
     //CHECK(bop_out.match == false);
     //CHECK(bop_out.input_index == 0);
   }

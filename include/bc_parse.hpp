@@ -23,9 +23,12 @@ enum class TreeCharType{
   TREE //signifies data is tree structure char '(' or ')'
 };
 
+constexpr int tree_node_size {5};
+
 typedef union TreeDatum{
   unsigned char character;
   unsigned int address;
+  unsigned int length;
   Opcode opcode;
 
 } TreeDatum;
@@ -39,16 +42,18 @@ enum class Rule{
   UNSET_RULE,
   NUMBER,
   SPACE,
-  ID
+  ID,
+  LABEL
 };
 
 
 typedef struct Shuttle{
   std::vector<TreeChar> &tree;
-  unsigned long int tree_index;
+  unsigned long int tree_index{0};
   const std::string &input_string;
-  unsigned long int input_index;
+  unsigned long int input_index{0};
   bool match;
+  bool expectNode {true};
   Rule rule;
   Shuttle(const std::string &input, std::vector<TreeChar> &tree );
   Shuttle(const std::string &input);
@@ -63,9 +68,10 @@ Instruction ParseInstruction (std::string input_string);
 Opcode GetOpcodeFromName(std::string opcode_name);
 
 //General Grammar Parser
-Shuttle ParseGrammar (const Shuttle &shuttle,
-  Shuttle (*ParseRule)(const Shuttle &shuttle));
-Shuttle bcParseNumber (const Shuttle &shuttle); 
-Shuttle bcParseSpace (const Shuttle &shuttle); 
-Shuttle bcParseId (const Shuttle &shuttle); 
-Shuttle bcParseLabelPtr (const Shuttle &shuttle); 
+Shuttle ParseGrammar (Shuttle &shuttle,
+  Shuttle (*ParseRule)(Shuttle &shuttle));
+
+Shuttle bcParseNumber (Shuttle &shuttle); 
+Shuttle bcParseSpace (Shuttle &shuttle); 
+Shuttle bcParseId (Shuttle &shuttle); 
+Shuttle bcParseLabel (Shuttle &shuttle); 

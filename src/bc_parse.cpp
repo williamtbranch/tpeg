@@ -113,15 +113,31 @@ Shuttle::Shuttle(const Shuttle &input_shuttle, Rule new_rule)
 {
 }
 
-Shuttle ParseGrammar (const Shuttle &shuttle,
-  Shuttle (*ParseRule)(const Shuttle &shuttle))
+
+Shuttle ParseGrammar (Shuttle &shuttle,
+  Shuttle (*ParseRule)(Shuttle &shuttle))
   {
+    auto tree_index = shuttle.tree_index + 3;
+    auto input_index = shuttle.input_index;
     Shuttle bop {ParseRule(shuttle)};
+    if (bop.match == true || bop.expectNode == true){
+      tree_index -= 3;
+      std::cout << "tree index is: " << tree_index << std::endl;
+      // bop.tree[tree_index].type = TreeCharType::TREE;
+      // bop.tree[tree_index].datum.character = '('; 
+      // tree_index++;
+      // bop.tree[tree_index].type = TreeCharType::ADDRESS;
+      // bop.tree[tree_index].datum.address = input_index; 
+      // tree_index++;
+      // bop.tree[tree_index].type = TreeCharType::LENGTH;
+      // bop.tree[tree_index].datum.address = bop.input_index - input_index; 
+
+    }
     return bop;
   }
 
 //number <- [1-9][0-9]+
-Shuttle bcParseNumber (const Shuttle &shuttle){
+Shuttle bcParseNumber (Shuttle &shuttle){
   #define ip bop.input_string[bop.input_index]
   Shuttle bop(shuttle, Rule::NUMBER);
   if (ip > '0' && ip <= '9'){
@@ -139,37 +155,23 @@ Shuttle bcParseNumber (const Shuttle &shuttle){
 }
 
 //space  <- [\s\t]+
-Shuttle bcParseSpace (const Shuttle &shuttle){
+Shuttle bcParseSpace (Shuttle &shuttle){
   #define ip bop.input_string[bop.input_index]
   Shuttle bop(shuttle, Rule::SPACE);
-  switch (ip)
-  {
-  case ' ':
-  case '\t':
-    bop.input_index++;
-    break;
-  default:
+  if ( ip == ' ' || ip == '\t') bop.input_index++; 
+  else {
     bop.match = false;
     return bop;
-    break;
   }
-  while (true){
-    switch (ip)
-    {
-    case ' ':
-    case '\t':
-      bop.input_index++;
-      break;
-    default:
-      return bop;
-      break;
-    }
+  while ( ip == ' ' || ip == '\t'){
+    bop.input_index++; 
   }
+  return bop;
   #undef ip
 }
 
 //id     <- [a-zA-Z_][a-zA-z0-9_.]*
-Shuttle bcParseId (const Shuttle &shuttle){
+Shuttle bcParseId (Shuttle &shuttle){
   #define ip bop.input_string[bop.input_index]
   Shuttle bop(shuttle, Rule::ID);
   if ( ip >= 'A' && ip <= 'Z' || ip >= 'a' & ip <= 'z' || ip == '_'){
@@ -190,10 +192,10 @@ Shuttle bcParseId (const Shuttle &shuttle){
   #undef ip
 }
 
-//label_ptr   <- ':'id 
-Shuttle bcParseLabelPtr (const Shuttle &shuttle){
+//label   <- ':'id 
+Shuttle bcParseLabel (Shuttle &shuttle){
   #define ip bop.input_string[bop.input_index]
-  Shuttle bop {shuttle};
+  Shuttle bop (shuttle, Rule::LABEL);
   //if (ip == ':')
   return bop;
   #undef ip
