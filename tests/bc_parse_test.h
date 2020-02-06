@@ -3,6 +3,7 @@
 #include <string>
 #include <parse_machine.hpp>
 #include <bc_parse.hpp>
+#include <iostream>
 
 TEST_CASE( "Single instruction correctness") {
   SECTION ( "MATCH parse"){
@@ -52,7 +53,8 @@ TEST_CASE( "Parsing multi-line correctness" ){
 //space       <- [\s\t]+
 //number      <- [1-9][0-9]+
 //id          <- [a-zA-Z_][a-zA-z0-9_.]*
-//label_ptr   <- ':'id 
+//colon       <- ':'
+//label       <- colon id 
 
 
 //space  <- [\s\t]+
@@ -235,24 +237,54 @@ TEST_CASE( "ParseGrammar test"){
     std::string input {"5655"};
     
     std::vector<TreeChar> tree;
-    tree.resize(input.size() * tree_node_size * 2);
     input.push_back(0);
     Shuttle bop {input, tree};
 
     Shuttle bop_out {ParseGrammar(bop, bcParseNumber)};
+
+
     CHECK(bop_out.tree[0].type == TreeCharType::TREE);
-    // CHECK(bop_out.tree[1].type == TreeCharType::ADDRESS);
-    // CHECK(bop_out.tree[2].type == TreeCharType::LENGTH);
-    // CHECK(bop_out.tree[3].type == TreeCharType::TREE);
-    // CHECK(bop_out.tree[0].datum.character == '(');
-    // CHECK(bop_out.tree[3].datum.character == ')');
-    // CHECK(bop_out.tree[1].datum.address == 0);
-    // CHECK(bop_out.tree[2].datum.length == 4);
-    // CHECK(bop_out.tree_index == 4);
+    CHECK(bop_out.tree[1].type == TreeCharType::RULE);
+    CHECK(bop_out.tree[2].type == TreeCharType::ADDRESS);
+    CHECK(bop_out.tree[3].type == TreeCharType::LENGTH);
+    CHECK(bop_out.tree[4].type == TreeCharType::TREE);
+    CHECK(bop_out.tree[0].datum.character == '(');
+    CHECK(bop_out.tree[1].datum.rule == Rule::NUMBER);
+    CHECK(bop_out.tree[2].datum.address == 0);
+    CHECK(bop_out.tree[3].datum.length == 4);
+    CHECK(bop_out.tree[4].datum.character == ')');
+    CHECK(bop_out.tree_index == 5);
   }
 }
 
-//label   <- ':'id 
+//colon   <- ':' 
+TEST_CASE( "bcParseColon test"){
+  SECTION ("Basic Not match '55'"){
+    std::string input {"55"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseColon(bop);
+    CHECK(bop_out.rule == Rule::COLON);
+    CHECK(bop_out.match == false);
+    CHECK(bop_out.input_index == 0);
+  }
+  SECTION ("Basic Not match '55'"){
+    std::string input {":5kj"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = bcParseColon(bop);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 1);
+  }
+}
+
+//label   <- colon id 
 TEST_CASE( "bcParseLabel test"){
   SECTION ("Basic Not match '55'"){
     std::string input {"55"};
@@ -261,9 +293,32 @@ TEST_CASE( "bcParseLabel test"){
     input.push_back(0);
     Shuttle bop {input, tree};
 
-    Shuttle bop_out = bcParseLabel(bop);
+    Shuttle bop_out = ParseGrammar(bop, bcParseLabel);
     CHECK(bop_out.rule == Rule::LABEL);
-    //CHECK(bop_out.match == false);
-    //CHECK(bop_out.input_index == 0);
+    CHECK(bop_out.match == false);
+    CHECK(bop_out.input_index == 0);
+  }
+  SECTION ("Basic match ':hello stuff'"){
+    std::string input {":hello stuff"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = ParseGrammar(bop, bcParseLabel);
+    CHECK(bop_out.match == true);
+    CHECK(bop_out.input_index == 6);
+    CHECK(bop_out.tree[0].type == TreeCharType::TREE);
+    CHECK(bop_out.tree[1].type == TreeCharType::RULE);
+    CHECK(bop_out.tree[2].type == TreeCharType::ADDRESS);
+    CHECK(bop_out.tree[3].type == TreeCharType::LENGTH);
+    CHECK(bop_out.tree[4].type == TreeCharType::TREE);
+    CHECK(bop_out.tree[0].datum.character == '(');
+    CHECK(bop_out.tree[1].datum.rule == Rule::LABEL);
+    CHECK(bop_out.tree[2].datum.address == 0);
+    CHECK(bop_out.tree[3].datum.length == 6);
+    CHECK(bop_out.tree[4].datum.character == '(');
+    PrintTree(bop_out);
+    // CHECK(bop_out.tree_index == 4);
   }
 }

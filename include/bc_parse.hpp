@@ -19,17 +19,28 @@ enum class TreeCharType{
   TREE_EOF,
   ADDRESS, //signifies datum holds address on input string bound to this node
   LENGTH, //signifies length of substring at ADDRESS
-  OPCODE, //signifies opcode associated with this node
+  RULE, //signifies rule associated with this node
   TREE //signifies data is tree structure char '(' or ')'
 };
 
-constexpr int tree_node_size {5};
+//used to estimate size needed for allocation of tree memory
+//in shuttle constructor
+constexpr int tree_node_size {5}; 
+
+enum class Rule{
+  UNSET_RULE,
+  NUMBER,
+  SPACE,
+  ID,
+  COLON,
+  LABEL
+};
 
 typedef union TreeDatum{
   unsigned char character;
   unsigned int address;
   unsigned int length;
-  Opcode opcode;
+  Rule rule;
 
 } TreeDatum;
 
@@ -38,13 +49,6 @@ typedef struct TreeChar{
   TreeDatum datum;
 } TreeChar;
 
-enum class Rule{
-  UNSET_RULE,
-  NUMBER,
-  SPACE,
-  ID,
-  LABEL
-};
 
 
 typedef struct Shuttle{
@@ -53,12 +57,16 @@ typedef struct Shuttle{
   const std::string &input_string;
   unsigned long int input_index{0};
   bool match;
-  bool expectNode {true};
+  // bool expectNode {true};
   Rule rule;
-  Shuttle(const std::string &input, std::vector<TreeChar> &tree );
+  Shuttle(const std::string &input, std::vector<TreeChar>& tree );
   Shuttle(const std::string &input);
   Shuttle(const Shuttle &input_shuttle, Rule new_rule);
+  Shuttle(const Shuttle &input_shuttle); //copy constructor
+  Shuttle& operator=(const Shuttle &input_shuttle); //copy assignment
 } Shuttle;
+
+void runner();
 
 //byte code parsing functions
 
@@ -75,3 +83,6 @@ Shuttle bcParseNumber (Shuttle &shuttle);
 Shuttle bcParseSpace (Shuttle &shuttle); 
 Shuttle bcParseId (Shuttle &shuttle); 
 Shuttle bcParseLabel (Shuttle &shuttle); 
+Shuttle bcParseColon (Shuttle &shuttle); 
+
+void PrintTree (const Shuttle &shuttle);

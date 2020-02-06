@@ -94,6 +94,61 @@ Opcode GetOpcodeFromName(std::string opcode_name){
 }
 
 
+
+void PrintTree (const Shuttle &shuttle){
+  int index = 0;
+  std::string out_string = "";
+  while (shuttle.tree_index != index){
+    switch (shuttle.tree[index].type)
+    {
+    case TreeCharType::TREE :
+      out_string = shuttle.tree[index].datum.character;
+      break;
+    case TreeCharType::LENGTH :
+      out_string = std::to_string((int)shuttle.tree[index].datum.length);
+      break;
+    case TreeCharType::RULE :
+      switch (shuttle.tree[index].datum.rule)
+      {
+      case Rule::UNSET_RULE:
+        out_string = "unset";
+        break;
+      case Rule::NUMBER:
+        out_string = "number";
+        break;
+      case Rule::SPACE:
+        out_string = "space";
+        break;
+      case Rule::ID:
+        out_string = "id";
+        break;
+      case Rule::COLON:
+        out_string = "colon";
+        break;
+      case Rule::LABEL:
+        out_string = "label";
+        break;
+      
+      default:
+        out_string = "****unassigned string label****";
+        break;
+      }
+      break;
+    case TreeCharType::ADDRESS :
+      out_string = std::to_string((int)shuttle.tree[index].datum.address);
+      break;
+    
+    default:
+      std::cout << "Something stupid happened." << std::endl;
+      break;
+    }
+    // std::cout << "At " << index << ": " << out_char << " " << std::endl;
+    std::cout <<  out_string << " ";
+    index++;
+  }
+  std::cout << std::endl;
+}
+
 Shuttle::Shuttle(const std::string &input, std::vector<TreeChar> &input_tree)
   : input_string{input},
     tree{input_tree},
@@ -102,6 +157,9 @@ Shuttle::Shuttle(const std::string &input, std::vector<TreeChar> &input_tree)
     rule {Rule::UNSET_RULE},
     match {true}
 {
+  
+
+      tree.resize (input_string.size() * tree_node_size * 2);
 }
 Shuttle::Shuttle(const Shuttle &input_shuttle, Rule new_rule)
   : input_string{input_shuttle.input_string},
@@ -113,25 +171,47 @@ Shuttle::Shuttle(const Shuttle &input_shuttle, Rule new_rule)
 {
 }
 
+Shuttle::Shuttle(const Shuttle &input_shuttle)
+  : input_string{input_shuttle.input_string},
+    tree{input_shuttle.tree},
+    tree_index{input_shuttle.tree_index},
+    input_index {input_shuttle.input_index},
+    rule {input_shuttle.rule},
+    match {input_shuttle.match}
+{
+}
+
+Shuttle& Shuttle::operator=(const Shuttle &input_shuttle)
+{
+  tree_index = input_shuttle.tree_index;
+  input_index = input_shuttle.input_index;
+  match = input_shuttle.match;
+  return *this;
+}
+
+
 
 Shuttle ParseGrammar (Shuttle &shuttle,
   Shuttle (*ParseRule)(Shuttle &shuttle))
   {
-    auto tree_index = shuttle.tree_index + 3;
+    auto tree_index = shuttle.tree_index;
     auto input_index = shuttle.input_index;
+    shuttle.tree_index += 4;
     Shuttle bop {ParseRule(shuttle)};
-    if (bop.match == true || bop.expectNode == true){
-      tree_index -= 3;
-      std::cout << "tree index is: " << tree_index << std::endl;
-      // bop.tree[tree_index].type = TreeCharType::TREE;
-      // bop.tree[tree_index].datum.character = '('; 
-      // tree_index++;
-      // bop.tree[tree_index].type = TreeCharType::ADDRESS;
-      // bop.tree[tree_index].datum.address = input_index; 
-      // tree_index++;
-      // bop.tree[tree_index].type = TreeCharType::LENGTH;
-      // bop.tree[tree_index].datum.address = bop.input_index - input_index; 
+    if (bop.match == true){
+      bop.tree[tree_index].type = TreeCharType::TREE;
+      bop.tree[tree_index + 1].type = TreeCharType::RULE;
+      bop.tree[tree_index + 2].type = TreeCharType::ADDRESS;
+      bop.tree[tree_index + 3].type = TreeCharType::LENGTH;
+      bop.tree[tree_index].datum.character = '(';
+      bop.tree[tree_index + 1].datum.rule = bop.rule;
+      bop.tree[tree_index + 2].datum.address = input_index;
+      bop.tree[tree_index + 3].datum.length = bop.input_index - input_index;
 
+      bop.tree[bop.tree_index].type = TreeCharType::TREE;
+      bop.tree[bop.tree_index].datum.character = ')';
+      bop.tree_index++;
+      bop.tree[bop.tree_index].type = TreeCharType::TREE_EOF;
     }
     return bop;
   }
@@ -192,11 +272,37 @@ Shuttle bcParseId (Shuttle &shuttle){
   #undef ip
 }
 
-//label   <- ':'id 
+//colon   <- ':'
+Shuttle bcParseColon (Shuttle &shuttle){
+  #define ip bop.input_string[bop.input_index]
+  Shuttle bop(shuttle, Rule::COLON);
+  if ( ip == ':'){
+    bop.input_index ++;
+    return bop;
+  }
+  else {
+    bop.match = false;
+    return bop;
+  }
+
+  #undef ip
+}
+
+//label   <- colon id 
 Shuttle bcParseLabel (Shuttle &shuttle){
   #define ip bop.input_string[bop.input_index]
   Shuttle bop (shuttle, Rule::LABEL);
-  //if (ip == ':')
+  Shuttle false_bop = bop;
+  false_bop.match = false;
+
+  bop = ParseGrammar(shuttle, bcParseColon);
+  if (bop.match != true){
+    return false_bop;
+  }
+  bop = ParseGrammar(bop, bcParseId);
+  if (bop.match != true){
+    return false_bop;
+  }
   return bop;
   #undef ip
 } 
