@@ -33,7 +33,8 @@ enum class Rule{
   SPACE,
   ID,
   COLON,
-  LABEL
+  LABEL,
+  CHAR
 };
 
 typedef union TreeDatum{
@@ -84,5 +85,7 @@ Shuttle bcParseSpace (Shuttle &shuttle);
 Shuttle bcParseId (Shuttle &shuttle); 
 Shuttle bcParseLabel (Shuttle &shuttle); 
 Shuttle bcParseColon (Shuttle &shuttle); 
+Shuttle bcParseChar (Shuttle &shuttle); 
 
 void PrintTree (const Shuttle &shuttle);
+std::string GetTreeString (const Shuttle &shuttle);

@@ -55,6 +55,10 @@ TEST_CASE( "Parsing multi-line correctness" ){
 //id          <- [a-zA-Z_][a-zA-z0-9_.]*
 //colon       <- ':'
 //label       <- colon id 
+//char        <- '\\' [ nrt'"\[\]\\"]
+//               / '\\' [0-2][0-7][0-7]
+//               / '\\' [0-7][0-7]?
+//               / ! '\\' .
 
 
 //space  <- [\s\t]+
@@ -318,7 +322,26 @@ TEST_CASE( "bcParseLabel test"){
     CHECK(bop_out.tree[2].datum.address == 0);
     CHECK(bop_out.tree[3].datum.length == 6);
     CHECK(bop_out.tree[4].datum.character == '(');
-    PrintTree(bop_out);
+    CHECK(GetTreeString(bop_out) == "( label 0 6 ( colon 0 1 ) ( id 1 5 ) ) ");
     // CHECK(bop_out.tree_index == 4);
+  }
+}
+
+//char        <- '\\' [ nrt'"\[\]\\"]
+//               / '\\' [0-2][0-7][0-7]
+//               / '\\' [0-7][0-7]?
+//               / ! '\\' .
+TEST_CASE( "bcParseChar test"){
+  SECTION ("Basic match '55 stuff' will match '5'"){
+    std::string input {"55"};
+    
+    std::vector<TreeChar> tree;
+    input.push_back(0);
+    Shuttle bop {input, tree};
+
+    Shuttle bop_out = ParseGrammar(bop, bcParseLabel);
+    CHECK(bop_out.rule == Rule::LABEL);
+    CHECK(bop_out.match == false);
+    CHECK(bop_out.input_index == 0);
   }
 }

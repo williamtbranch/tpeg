@@ -94,10 +94,10 @@ Opcode GetOpcodeFromName(std::string opcode_name){
 }
 
 
-
-void PrintTree (const Shuttle &shuttle){
+std::string GetTreeString (const Shuttle &shuttle){
   int index = 0;
   std::string out_string = "";
+  std::string out_stream = "";
   while (shuttle.tree_index != index){
     switch (shuttle.tree[index].type)
     {
@@ -128,6 +128,9 @@ void PrintTree (const Shuttle &shuttle){
       case Rule::LABEL:
         out_string = "label";
         break;
+      case Rule::CHAR:
+        out_string = "char";
+        break;
       
       default:
         out_string = "****unassigned string label****";
@@ -139,14 +142,18 @@ void PrintTree (const Shuttle &shuttle){
       break;
     
     default:
-      std::cout << "Something stupid happened." << std::endl;
+      out_string =  "Something stupid happened. ";
       break;
     }
-    // std::cout << "At " << index << ": " << out_char << " " << std::endl;
-    std::cout <<  out_string << " ";
+    out_stream +=  out_string + " ";
     index++;
   }
-  std::cout << std::endl;
+  return out_stream;
+}
+
+void PrintTree (const Shuttle &shuttle){
+  std::string print_string = GetTreeString(shuttle);
+  std::cout << print_string;
 }
 
 Shuttle::Shuttle(const std::string &input, std::vector<TreeChar> &input_tree)
@@ -189,8 +196,6 @@ Shuttle& Shuttle::operator=(const Shuttle &input_shuttle)
   return *this;
 }
 
-
-
 Shuttle ParseGrammar (Shuttle &shuttle,
   Shuttle (*ParseRule)(Shuttle &shuttle))
   {
@@ -212,6 +217,9 @@ Shuttle ParseGrammar (Shuttle &shuttle,
       bop.tree[bop.tree_index].datum.character = ')';
       bop.tree_index++;
       bop.tree[bop.tree_index].type = TreeCharType::TREE_EOF;
+    }
+    else{
+      bop.tree_index -= 4;
     }
     return bop;
   }
@@ -292,6 +300,28 @@ Shuttle bcParseColon (Shuttle &shuttle){
 Shuttle bcParseLabel (Shuttle &shuttle){
   #define ip bop.input_string[bop.input_index]
   Shuttle bop (shuttle, Rule::LABEL);
+  Shuttle false_bop = bop;
+  false_bop.match = false;
+
+  bop = ParseGrammar(shuttle, bcParseColon);
+  if (bop.match != true){
+    return false_bop;
+  }
+  bop = ParseGrammar(bop, bcParseId);
+  if (bop.match != true){
+    return false_bop;
+  }
+  return bop;
+  #undef ip
+} 
+
+//char        <- '\\' [ nrt'"\[\]\\"]
+//               / '\\' [0-2][0-7][0-7]
+//               / '\\' [0-7][0-7]?
+//               / ! '\\' .
+Shuttle bcParseChar (Shuttle &shuttle){
+  #define ip bop.input_string[bop.input_index]
+  Shuttle bop (shuttle, Rule::CHAR);
   Shuttle false_bop = bop;
   false_bop.match = false;
 
